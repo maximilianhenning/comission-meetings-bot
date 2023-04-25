@@ -11,6 +11,7 @@ import xlrd
 from glob import glob
 from datetime import datetime
 import re
+from time import sleep
 
 dir = path.dirname(__file__)
 
@@ -26,19 +27,19 @@ for row in links_df.iterrows():
     link_dict[row[1]["name"]] = row[1]["link"]
 
 # Get all meetings files
-#for name in names:
-#    resp = requests.get(link_dict[name])
-#    if not path.exists(path.join(dir, "meetings_dumped")):
-#        makedirs(path.join(dir, "meetings_dumped"))
-#    with open(path.join(dir, "meetings_dumped", name + ".xlsx"), "wb") as file:
-#        file.write(resp.content)
+for name in names:
+    resp = requests.get(link_dict[name])
+    if not path.exists(path.join(dir, "meetings_dumped")):
+        makedirs(path.join(dir, "meetings_dumped"))
+    with open(path.join(dir, "meetings_dumped", name + ".xlsx"), "wb") as file:
+        file.write(resp.content)
 
 # Delete first row
-#for name in names:
-#    wb = openpyxl.load_workbook(path.join(dir, "meetings_dumped", name + ".xlsx"))
-#    sheet = wb['Sheet1']
-#    sheet.delete_rows(1)
-#    wb.save(path.join(dir, "meetings_dumped", name + ".xlsx"))
+for name in names:
+    wb = openpyxl.load_workbook(path.join(dir, "meetings_dumped", name + ".xlsx"))
+    sheet = wb['Sheet1']
+    sheet.delete_rows(1)
+    wb.save(path.join(dir, "meetings_dumped", name + ".xlsx"))
 
 # Get list of meetings to post
 def get_meeting_details(meeting, name):
@@ -68,7 +69,7 @@ for name in names:
     selected_df.rename(columns = {"Name": "name", "Date of meeting": "date", "Location": "location", "Entity/ies met": "met_with", "Subject(s)": "subject"}, inplace = True)
     selected_df["subject"] = selected_df["subject"].str.strip()
     # Check only against relevant part of posted meetings
-    check_df = posted_df.loc[posted_df["name"] == name]
+    check_df = posted_df.loc[posted_df["commissioner"] == name]
     # Check if meetings are in posted meetings already, if not get their info
     for meeting in selected_df.iterrows():
         # Add if there is no meeting on that date yet
@@ -80,6 +81,7 @@ for name in names:
 # Put everything together
 to_post_df = pd.DataFrame(meetings_to_post_list)
 to_post_df.rename(columns = {0: "commissioner", 1: "category", 2: "persons", 3: "date", 4: "year", 5: "month", 6: "day", 7:"met_with", 8: "subject"}, inplace = True)
+to_post_df.sort_values(by = ["year", "month", "day"], ascending = False, inplace = True)
 
 # Check if register file needs to be updated and do it if yes
 def read_register_file():
@@ -152,15 +154,14 @@ with open(path.join(dir, "token.txt"), "r") as file:
     token = file.read()
 url = "https://eupolicy.social/api/v1/statuses"
 auth = {"Authorization": "Bearer " + str(token)}
-params = {"status": "hello world"}
-r = requests.post(url, data = params, headers = auth)
-print(r)
 
 # Post messages
-#for message in message_list:
-    # Wait one minute
-
+for message in message_list:
+    params = {"status": message}
+    r = requests.post(url, data = params, headers = auth)
+    print(r)
+    sleep(5)
 
 # Add meetings to posted file
-
-
+posted_df = pd.concat([posted_df, to_post_df])
+posted_df.to_csv(path.join(dir, "meetings_posted.csv"), sep = ";", encoding = "utf-8", index = False)
