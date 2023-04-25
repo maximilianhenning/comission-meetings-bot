@@ -1,8 +1,13 @@
+from os import path, makedirs, remove, environ
+environ["OPENBLAS_NUM_THREADS"] = "1"
+environ["OMP_NUM_THREADS"] = "1"
+environ["MKL_NUM_THREADS"] = "1"
+environ["VECLIB_MAXIMUM_THREADS"] = "1"
+environ["NUMEXPR_NUM_THREADS"] = "1"
 import pandas as pd
 import requests
 import openpyxl
 import xlrd
-from os import path, makedirs, remove
 from glob import glob
 from datetime import datetime
 import re
@@ -23,6 +28,8 @@ for row in links_df.iterrows():
 # Get all meetings files
 #for name in names:
 #    resp = requests.get(link_dict[name])
+#    if not path.exists(path.join(dir, "meetings_dumped")):
+#        makedirs(path.join(dir, "meetings_dumped"))
 #    with open(path.join(dir, "meetings_dumped", name + ".xlsx"), "wb") as file:
 #        file.write(resp.content)
 
@@ -30,9 +37,10 @@ for row in links_df.iterrows():
 #for name in names:
 #    wb = openpyxl.load_workbook(path.join(dir, "meetings_dumped", name + ".xlsx"))
 #    sheet = wb['Sheet1']
-#    sheet.delete_rows(sheet.min_row, 1)
+#    sheet.delete_rows(1)
 #    wb.save(path.join(dir, "meetings_dumped", name + ".xlsx"))
 
+# Get list of meetings to post
 def get_meeting_details(meeting, name):
     if "name" in meeting[1].keys():
         meeting_name = meeting[1]["name"]
@@ -48,7 +56,6 @@ def get_meeting_details(meeting, name):
     subject = meeting[1]["subject"]
     return [name, category, meeting_name, date, year, month, day, met_with, subject]
 
-# Get list of meetings to post
 meetings_to_post_list = []
 for name in names:
     df = pd.read_excel(path.join(dir, "meetings_dumped", name + ".xlsx"))
@@ -75,16 +82,19 @@ to_post_df = pd.DataFrame(meetings_to_post_list)
 to_post_df.rename(columns = {0: "commissioner", 1: "category", 2: "persons", 3: "date", 4: "year", 5: "month", 6: "day", 7:"met_with", 8: "subject"}, inplace = True)
 
 # Check if register file needs to be updated and do it if yes
+def read_register_file():
+    return glob(path.join(dir, "register/*"))[0]
+
 month = datetime.today().strftime("%Y-%m")
-register_file = glob(path.join(dir, "register/*"))
-last_update = register_file[0].split("\\")[-1].split(".")[0]
+register_file = read_register_file()
+last_update = register_file.split("\\")[-1].split(".")[0]
 if month > last_update:
-    resp = requests.get("https://ec.europa.eu/transparencyregister/public/consultation/statistics.do?action=getLobbyistsExcel&fileType=XLS_NEW")   
-    with open(path.join(dir, "register", month + ".xls"), "wb") as file:
-        file.write(resp.content)
     remove(register_file)
-register_file = glob(path.join(dir, "register/*"))[0]
-register_df = pd.read_excel(register_file)
+    resp = requests.get("https://ec.europa.eu/transparencyregister/public/consultation/statistics.do?action=getLobbyistsExcel&fileType=XLS_NEW")   
+    new_register_df = pd.read_excel(resp.content)
+    new_register_df.to_csv(path.join(dir, "register", month + ".csv"), sep = ";", encoding = "utf-8")
+register_file = read_register_file()
+register_df = pd.read_csv(register_file, sep = ";", encoding = "utf-8")
 
 # Get register links for organisations
 def find_link(met_with):
@@ -106,10 +116,14 @@ def find_link(met_with):
 to_post_df["link"] = to_post_df["met_with"].apply(find_link)
 
 # Construct messages
+message_list = []
 for meeting in to_post_df.iterrows():
     # Get variables
-    commissioner = meeting[1]["commissioner"]
     category = meeting[1]["category"]
+    if category == "cabinet":
+        commissioner = meeting[1]["commissioner"].split("_")[0]
+    else:
+        commissioner = meeting[1]["commissioner"]
     persons = meeting[1]["persons"]
     date = meeting[1]["date"]
     met_with = meeting[1]["met_with"]
@@ -121,6 +135,7 @@ for meeting in to_post_df.iterrows():
     else:
         message = "Commissioner " + str(commissioner)
     message += " met on " + str(date) + " with:\n\n" + str(met_with) + " " + str(link) + "\n\nSubject(s):\n\n" + str(subject)
+    # Hashtags
     commissioner_code = commissioner[:3]
     general_tag = commissioner_code + "meetings"
     if category == "cabinet":
@@ -129,10 +144,20 @@ for meeting in to_post_df.iterrows():
         specific_tag = commissioner_code + "per" + "meetings"
     # XXXX Add tag for met_with
     message += "\n\n#" + general_tag + " #" + specific_tag
-    print(message)
     # Add to list
+    message_list.append(message)
 
-# Post message
+# Set up connection to Mastodon API
+with open(path.join(dir, "token.txt"), "r") as file:
+    token = file.read()
+url = "https://eupolicy.social/api/v1/statuses"
+auth = {"Authorization": "Bearer " + str(token)}
+params = {"status": "hello world"}
+r = requests.post(url, data = params, headers = auth)
+print(r)
+
+# Post messages
+#for message in message_list:
     # Wait one minute
 
 
