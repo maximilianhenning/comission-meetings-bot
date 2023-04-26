@@ -37,9 +37,9 @@ for name in names:
 # Delete first row
 for name in names:
     wb = openpyxl.load_workbook(path.join(dir, "meetings_dumped", name + ".xlsx"))
-    sheet = wb['Sheet1']
+    sheet = wb.active
     sheet.delete_rows(1)
-    wb.save(path.join(dir, "meetings_dumped", name + ".xlsx"))
+    wb.save(path.join(dir, "meetings_wrangled", name + ".xlsx"))
 
 # Get list of meetings to post
 def get_meeting_details(meeting, name):
@@ -59,9 +59,10 @@ def get_meeting_details(meeting, name):
 
 meetings_to_post_list = []
 for name in names:
-    df = pd.read_excel(path.join(dir, "meetings_dumped", name + ".xlsx"))
+    df = pd.read_excel(path.join(dir, "meetings_wrangled", name + ".xlsx"))
     # Split date column
-    df[["day", "month", "year"]] = df["Date of meeting"].str.split("/", expand = True).astype(int)
+    df["Date of meeting"] = df["Date of meeting"].str.replace("/", ".")
+    df[["day", "month", "year"]] = df["Date of meeting"].str.split(".", expand = True).astype(int)
     # Select everything that happened after March 2023
     selected_df = df.loc[df["year"] > 2022]
     selected_df = selected_df.loc[selected_df["month"] > 3]
@@ -73,15 +74,15 @@ for name in names:
     # Check if meetings are in posted meetings already, if not get their info
     for meeting in selected_df.iterrows():
         # Add if there is no meeting on that date yet
-        if meeting[1]["date"] not in check_df["date"]:
+        if meeting[1]["date"] not in check_df["date"].tolist():
             meetings_to_post_list.append(get_meeting_details(meeting, name))
         # Or if there is no meeting on that date with that organisation yet
-        elif meeting[1]["met_with"] not in check_df.loc[check_df["date"] == meeting[1]["date"]]["met_with"]:
+        elif meeting[1]["met_with"] not in check_df.loc[check_df["date"] == meeting[1]["date"]]["met_with"].tolist():
             meetings_to_post_list.append(get_meeting_details(meeting, name))
 # Put everything together
 to_post_df = pd.DataFrame(meetings_to_post_list)
 to_post_df.rename(columns = {0: "commissioner", 1: "category", 2: "persons", 3: "date", 4: "year", 5: "month", 6: "day", 7:"met_with", 8: "subject"}, inplace = True)
-to_post_df.sort_values(by = ["year", "month", "day"], ascending = False, inplace = True)
+to_post_df.sort_values(by = ["year", "month", "day"], inplace = True)
 
 # Check if register file needs to be updated and do it if yes
 def read_register_file():
@@ -137,15 +138,11 @@ for meeting in to_post_df.iterrows():
     else:
         message = "Commissioner " + str(commissioner)
     message += " met on " + str(date) + " with:\n\n" + str(met_with) + " " + str(link) + "\n\nSubject(s):\n\n" + str(subject)
-    # Hashtags
+    # Hashtag
     commissioner_code = commissioner[:3]
-    general_tag = commissioner_code + "meetings"
-    if category == "cabinet":
-        specific_tag = commissioner_code + "cab" + "meetings"
-    else:
-        specific_tag = commissioner_code + "per" + "meetings"
+    tag = commissioner_code + "meetings"
+    message += "\n\n#" + tag
     # XXXX Add tag for met_with
-    message += "\n\n#" + general_tag + " #" + specific_tag
     # Add to list
     message_list.append(message)
 
@@ -157,6 +154,7 @@ auth = {"Authorization": "Bearer " + str(token)}
 
 # Post messages
 for message in message_list:
+    print(message)
     params = {"status": message}
     r = requests.post(url, data = params, headers = auth)
     print(r)
