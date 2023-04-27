@@ -39,6 +39,8 @@ for name in names:
     wb = openpyxl.load_workbook(path.join(dir, "meetings_dumped", name + ".xlsx"))
     sheet = wb.active
     sheet.delete_rows(1)
+    if not path.exists(path.join(dir, "meetings_wrangled")):
+        makedirs(path.join(dir, "meetings_wrangled"))
     wb.save(path.join(dir, "meetings_wrangled", name + ".xlsx"))
 
 # Get list of meetings to post
