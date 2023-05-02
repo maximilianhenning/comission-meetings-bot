@@ -163,7 +163,7 @@ else:
         params = {"status": message}
         r = requests.post(url, data = params, headers = auth)
         print(r)
-        sleep(300)
+        sleep(600)
 
     # Add meetings to posted file
     posted_df = pd.concat([posted_df, to_post_df])
