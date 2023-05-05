@@ -27,21 +27,21 @@ for row in links_df.iterrows():
     link_dict[row[1]["name"]] = row[1]["link"]
 
 # Get all meetings files
-#for name in names:
-#    resp = requests.get(link_dict[name])
-#    if not path.exists(path.join(dir, "meetings_dumped")):
-#        makedirs(path.join(dir, "meetings_dumped"))
-#    with open(path.join(dir, "meetings_dumped", name + ".xlsx"), "wb") as file:
-#        file.write(resp.content)
+for name in names:
+    resp = requests.get(link_dict[name])
+    if not path.exists(path.join(dir, "meetings_dumped")):
+        makedirs(path.join(dir, "meetings_dumped"))
+    with open(path.join(dir, "meetings_dumped", name + ".xlsx"), "wb") as file:
+        file.write(resp.content)
 
 # Delete first row
-#for name in names:
-#    wb = openpyxl.load_workbook(path.join(dir, "meetings_dumped", name + ".xlsx"))
-#    sheet = wb.active
-#    sheet.delete_rows(1)
-#    if not path.exists(path.join(dir, "meetings_wrangled")):
-#        makedirs(path.join(dir, "meetings_wrangled"))
-#    wb.save(path.join(dir, "meetings_wrangled", name + ".xlsx"))
+for name in names:
+    wb = openpyxl.load_workbook(path.join(dir, "meetings_dumped", name + ".xlsx"))
+    sheet = wb.active
+    sheet.delete_rows(1)
+    if not path.exists(path.join(dir, "meetings_wrangled")):
+        makedirs(path.join(dir, "meetings_wrangled"))
+    wb.save(path.join(dir, "meetings_wrangled", name + ".xlsx"))
 
 # Get list of meetings to post
 def get_meeting_details(meeting, name):
