@@ -87,7 +87,7 @@ if not meetings_to_post_list:
 else:
     to_post_df = pd.DataFrame(meetings_to_post_list)
     to_post_df.rename(columns = {0: "commissioner", 1: "category", 2: "persons", 3: "date", 4: "year", 5: "month", 6: "day", 7: "met_with", 8: "subject"}, inplace = True)
-    to_post_df.sort_values(by = ["year", "month", "day"], inplace = True)
+    to_post_df.sort_values(by = ["year", "month", "day"], ascending = False, inplace = True)
 
     # Check if register file needs to be updated and do it if yes
     def read_register_file():
