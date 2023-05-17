@@ -36,12 +36,15 @@ for name in names:
 
 # Delete first row
 for name in names:
-    wb = openpyxl.load_workbook(path.join(dir, "meetings_dumped", name + ".xlsx"))
-    sheet = wb.active
-    sheet.delete_rows(1)
-    if not path.exists(path.join(dir, "meetings_wrangled")):
-        makedirs(path.join(dir, "meetings_wrangled"))
-    wb.save(path.join(dir, "meetings_wrangled", name + ".xlsx"))
+    try:
+        wb = openpyxl.load_workbook(path.join(dir, "meetings_dumped", name + ".xlsx"))
+        sheet = wb.active
+        sheet.delete_rows(1)
+        if not path.exists(path.join(dir, "meetings_wrangled")):
+            makedirs(path.join(dir, "meetings_wrangled"))
+        wb.save(path.join(dir, "meetings_wrangled", name + ".xlsx"))
+    except:
+        print("Error on name", name)
 
 # Get list of meetings to post
 def get_meeting_details(meeting, name):
