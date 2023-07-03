@@ -27,24 +27,24 @@ for row in links_df.iterrows():
     link_dict[row[1]["name"]] = row[1]["link"]
 
 # Get all meetings files
-for name in names:
-    resp = requests.get(link_dict[name])
-    if not path.exists(path.join(dir, "meetings_dumped")):
-        makedirs(path.join(dir, "meetings_dumped"))
-    with open(path.join(dir, "meetings_dumped", name + ".xlsx"), "wb") as file:
-        file.write(resp.content)
+#for name in names:
+#    resp = requests.get(link_dict[name])
+#    if not path.exists(path.join(dir, "meetings_dumped")):
+#        makedirs(path.join(dir, "meetings_dumped"))
+#    with open(path.join(dir, "meetings_dumped", name + ".xlsx"), "wb") as file:
+#        file.write(resp.content)
 
 # Delete first row
-for name in names:
-    try:
-        wb = openpyxl.load_workbook(path.join(dir, "meetings_dumped", name + ".xlsx"))
-        sheet = wb.active
-        sheet.delete_rows(1)
-        if not path.exists(path.join(dir, "meetings_wrangled")):
-            makedirs(path.join(dir, "meetings_wrangled"))
-        wb.save(path.join(dir, "meetings_wrangled", name + ".xlsx"))
-    except:
-        print("Error on name", name)
+#for name in names:
+#    try:
+#        wb = openpyxl.load_workbook(path.join(dir, "meetings_dumped", name + ".xlsx"))
+#        sheet = wb.active
+#        sheet.delete_rows(1)
+#        if not path.exists(path.join(dir, "meetings_wrangled")):
+#            makedirs(path.join(dir, "meetings_wrangled"))
+#        wb.save(path.join(dir, "meetings_wrangled", name + ".xlsx"))
+#    except:
+#        print("Error on name", name)
 
 # Get list of meetings to post
 def get_meeting_details(meeting, name):
@@ -94,16 +94,19 @@ else:
 
     # Check if register file needs to be updated and do it if yes
     def read_register_file():
-        return glob(path.join(dir, "register/*"))[0]
+        return glob(path.join(dir, "register/*"))[-1]
 
     month = datetime.today().strftime("%Y-%m")
     register_file = read_register_file()
     last_update = register_file.split("\\")[-1].split(".")[0]
     if month > last_update:
-        remove(register_file)
-        resp = requests.get("https://ec.europa.eu/transparencyregister/public/consultation/statistics.do?action=getLobbyistsExcel&fileType=XLS_NEW")   
-        new_register_df = pd.read_excel(resp.content)
-        new_register_df.to_csv(path.join(dir, "register", month + ".csv"), sep = ";", encoding = "utf-8")
+        # Commission sometimes updates faulty spreadsheets - in those cases ignore exception & try again next time
+        try:
+            resp = requests.get("https://ec.europa.eu/transparencyregister/public/consultation/statistics.do?action=getLobbyistsExcel&fileType=XLS_NEW")   
+            new_register_df = pd.read_excel(resp.content)
+            new_register_df.to_csv(path.join(dir, "register", month + ".csv"), sep =  ";", encoding = "utf-8", index = False)
+        except Exception:
+            pass
     register_file = read_register_file()
     register_df = pd.read_csv(register_file, sep = ";", encoding = "utf-8")
 
