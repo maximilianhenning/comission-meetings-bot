@@ -65,25 +65,27 @@ def get_meeting_details(meeting, name):
 meetings_to_post_list = []
 for name in names:
     df = pd.read_excel(path.join(dir, "meetings_wrangled", name + ".xlsx"))
-    # Split date column
-    df["Date of meeting"] = df["Date of meeting"].str.replace("/", ".")
-    df[["day", "month", "year"]] = df["Date of meeting"].str.split(".", expand = True).astype(int)
-    # Select everything that happened after March 2023
-    selected_df = df.loc[df["year"] > 2022]
-    selected_df = selected_df.loc[selected_df["month"] > 3]
-    # Rename columns
-    selected_df.rename(columns = {"Name": "name", "Date of meeting": "date", "Location": "location", "Entity/ies met": "met_with", "Subject(s)": "subject"}, inplace = True)
-    selected_df["subject"] = selected_df["subject"].str.strip()
-    # Check only against relevant part of posted meetings
-    check_df = posted_df.loc[posted_df["commissioner"] == name]
-    # Check if meetings are in posted meetings already, if not get their info
-    for meeting in selected_df.iterrows():
-        # Add if there is no meeting on that date yet
-        if meeting[1]["date"] not in check_df["date"].tolist():
-            meetings_to_post_list.append(get_meeting_details(meeting, name))
-        # Or if there is no meeting on that date with that organisation yet
-        elif meeting[1]["met_with"] not in check_df.loc[check_df["date"] == meeting[1]["date"]]["met_with"].tolist():
-            meetings_to_post_list.append(get_meeting_details(meeting, name))
+    # Proceed only if there are meetings
+    if len(df.index > 0):
+        # Split date column
+        df["Date of meeting"] = df["Date of meeting"].str.replace("/", ".")
+        df[["day", "month", "year"]] = df["Date of meeting"].str.split(".", expand = True).astype(int)
+        # Select everything that happened after March 2023
+        selected_df = df.loc[df["year"] > 2022]
+        selected_df = selected_df.loc[selected_df["month"] > 3]
+        # Rename columns
+        selected_df.rename(columns = {"Name": "name", "Date of meeting": "date", "Location": "location", "Entity/ies met": "met_with", "Subject(s)": "subject"}, inplace = True)
+        selected_df["subject"] = selected_df["subject"].str.strip()
+        # Check only against relevant part of posted meetings
+        check_df = posted_df.loc[posted_df["commissioner"] == name]
+        # Check if meetings are in posted meetings already, if not get their info
+        for meeting in selected_df.iterrows():
+            # Add if there is no meeting on that date yet
+            if meeting[1]["date"] not in check_df["date"].tolist():
+                meetings_to_post_list.append(get_meeting_details(meeting, name))
+            # Or if there is no meeting on that date with that organisation yet
+            elif meeting[1]["met_with"] not in check_df.loc[check_df["date"] == meeting[1]["date"]]["met_with"].tolist():
+                meetings_to_post_list.append(get_meeting_details(meeting, name))
 # If there are meetings to post, put everything together
 if not meetings_to_post_list:
     print("No new meetings to post")
