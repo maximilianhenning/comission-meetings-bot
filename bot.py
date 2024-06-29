@@ -165,7 +165,7 @@ else:
     url = "https://eupolicy.social/api/v1/statuses"
     auth = {"Authorization": "Bearer " + str(token)}
 
-    # Post messages
+     Post messages
     for message in message_list:
         print(message)
         params = {"status": message}
