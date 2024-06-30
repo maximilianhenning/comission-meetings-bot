@@ -1,4 +1,5 @@
 meetings_dumped/*
 meetings_wrangled/*
 register/*
-token.txt
+mastodon_token.txt
+bsky_token.txt

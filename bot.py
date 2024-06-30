@@ -12,6 +12,7 @@ from glob import glob
 from datetime import datetime
 import re
 from time import sleep
+from atproto import Client
 
 dir = path.dirname(__file__)
 
@@ -160,17 +161,31 @@ else:
         message_list.append(message)
 
     # Set up connection to Mastodon API
-    with open(path.join(dir, "token.txt"), "r") as file:
+    with open(path.join(dir, "mastodon_token.txt"), "r") as file:
         token = file.read()
     url = "https://eupolicy.social/api/v1/statuses"
     auth = {"Authorization": "Bearer " + str(token)}
 
-     Post messages
+    # Post messages to Mastodon
+    print("\n\Mastodon\n\n")
     for message in message_list:
         print(message)
         params = {"status": message}
         r = requests.post(url, data = params, headers = auth)
         print(r)
+        sleep(15)
+
+    # Set up connection to Bluesky API
+    with open(path.join(dir, "bsky_token.txt"), "r") as file:
+        token = file.read()
+    client = Client(base_url = "https://bsky.social")
+    client.login("eulobbybot.bsky.social", token)
+
+    # Post messages to Bluesky
+    print("\n\nBluesky\n\n")
+    for message in message_list:
+        post = client.send_post(message)
+        print(post)
         sleep(15)
 
     # Add meetings to posted file
