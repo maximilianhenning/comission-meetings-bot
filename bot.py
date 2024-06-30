@@ -167,7 +167,7 @@ else:
     auth = {"Authorization": "Bearer " + str(token)}
 
     # Post messages to Mastodon
-    print("\n\Mastodon\n\n")
+    print("\n\nMastodon\n\n")
     for message in message_list:
         print(message)
         params = {"status": message}
