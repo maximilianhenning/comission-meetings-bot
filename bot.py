@@ -13,6 +13,7 @@ from datetime import datetime
 import re
 from time import sleep
 from atproto import Client
+from bs4 import BeautifulSoup
 
 dir = path.dirname(__file__)
 
@@ -24,16 +25,21 @@ posted_df = pd.read_csv(path.join(dir, "meetings_posted.csv"), sep = ";", encodi
 link_dict = {}
 names = []
 for row in links_df.iterrows():
-    names.append(row[1]["name"])
-    link_dict[row[1]["name"]] = row[1]["link"]
+    name = row[1]["name"]
+    names.append(name)
+    link = row[1]["link"]
+    link_dict[name] = link
 
 # Get all meetings files
 for name in names:
-    resp = requests.get(link_dict[name])
-    if not path.exists(path.join(dir, "meetings_dumped")):
-        makedirs(path.join(dir, "meetings_dumped"))
-    with open(path.join(dir, "meetings_dumped", name + ".xlsx"), "wb") as file:
-        file.write(resp.content)
+    try:
+        resp = requests.get(link_dict[name])
+        if not path.exists(path.join(dir, "meetings_dumped")):
+            makedirs(path.join(dir, "meetings_dumped"))
+        with open(path.join(dir, "meetings_dumped", name + ".xlsx"), "wb") as file:
+            file.write(resp.content)
+    except:
+        print("Error on getting meetings file for", name)
 
 # Delete first row
 for name in names:
@@ -45,7 +51,7 @@ for name in names:
             makedirs(path.join(dir, "meetings_wrangled"))
         wb.save(path.join(dir, "meetings_wrangled", name + ".xlsx"))
     except:
-        print("Error on name", name)
+        print("Error on deleting first row for", name)
 
 # Get list of meetings to post
 def get_meeting_details(meeting, name):
@@ -161,33 +167,33 @@ else:
         message_list.append(message)
 
     # Set up connection to Mastodon API
-    with open(path.join(dir, "mastodon_token.txt"), "r") as file:
-        token = file.read()
-    url = "https://eupolicy.social/api/v1/statuses"
-    auth = {"Authorization": "Bearer " + str(token)}
+    #with open(path.join(dir, "mastodon_token.txt"), "r") as file:
+    #    token = file.read()
+    #url = "https://eupolicy.social/api/v1/statuses"
+    #auth = {"Authorization": "Bearer " + str(token)}
 
     # Post messages to Mastodon
-    print("\n\nMastodon\n\n")
-    for message in message_list:
-        print(message)
-        params = {"status": message}
-        r = requests.post(url, data = params, headers = auth)
-        print(r)
-        sleep(15)
+    #print("\n\nMastodon\n\n")
+    #for message in message_list:
+    #    print(message)
+    #    params = {"status": message}
+    #    r = requests.post(url, data = params, headers = auth)
+    #    print(r)
+    #    sleep(15)
 
     # Set up connection to Bluesky API
-    with open(path.join(dir, "bsky_token.txt"), "r") as file:
-        token = file.read()
-    client = Client(base_url = "https://bsky.social")
-    client.login("eulobbybot.bsky.social", token)
+    #with open(path.join(dir, "bsky_token.txt"), "r") as file:
+    #    token = file.read()
+    #client = Client(base_url = "https://bsky.social")
+    #client.login("eulobbybot.bsky.social", token)
 
     # Post messages to Bluesky
-    print("\n\nBluesky\n\n")
-    for message in message_list:
-        post = client.send_post(message)
-        print(post)
-        sleep(15)
+    #print("\n\nBluesky\n\n")
+    #for message in message_list:
+    #    post = client.send_post(message)
+    #    print(post)
+    #    sleep(15)
 
     # Add meetings to posted file
-    posted_df = pd.concat([posted_df, to_post_df])
-    posted_df.to_csv(path.join(dir, "meetings_posted.csv"), sep = ";", encoding = "utf-8", index = False)
+    #posted_df = pd.concat([posted_df, to_post_df])
+    #posted_df.to_csv(path.join(dir, "meetings_posted.csv"), sep = ";", encoding = "utf-8", index = False)

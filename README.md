@@ -1,1 +1,1 @@
-A bot that scrapes the meetings of EU Commissioners and posts them to Mastodon 
+A bot that scrapes the meetings of EU Commissioners and posts them to Mastodon and Bluesky.
