@@ -149,10 +149,10 @@ else:
         else:
             commissioner = meeting[1]["commissioner"]
         persons = meeting[1]["persons"]
-        date = meeting[1]["date"]
-        met_with = meeting[1]["met_with"]
-        subject = meeting[1]["subject"]
-        link = meeting[1]["link"]
+        date = str(meeting[1]["date"])
+        met_with = str(meeting[1]["met_with"])
+        subject = str(meeting[1]["subject"])
+        link = str(meeting[1]["link"])
         # Put everything together
         if category == "cabinet":
             mastodon_message = "Cabinet members of Commissioner " + str(commissioner)
@@ -161,7 +161,10 @@ else:
             mastodon_message = "Commissioner " + str(commissioner)
             bluesky_message = "Commissioner " + str(commissioner)
         mastodon_message += " met on " + str(date) + " with:\n\n" + str(met_with) + " " + str(link) + "\n\nSubject(s):\n\n" + str(subject)
-        bluesky_message += " met on " + str(date) + " with:\n\n" + str(met_with) + "\n\nSubject(s):\n\n" + str(subject)
+        if len(bluesky_message) + len(met_with) + len(subject) < 280:
+            bluesky_message += " met on " + str(date) + " with:\n\n" + str(met_with) + "\n\nSubject(s):\n\n" + str(subject)
+        else:
+            bluesky_message += " met on " + str(date) + " with:\n\n" + str(met_with) + "\n\nSubject(s):\n\nToo long for message"
         # Hashtag
         commissioner_code = commissioner[:3]
         tag = commissioner_code + "meetings"
