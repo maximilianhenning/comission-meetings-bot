@@ -139,7 +139,8 @@ else:
     to_post_df["link"] = to_post_df["met_with"].apply(find_link)
 
     # Construct messages
-    message_list = []
+    mastodon_message_list = []
+    bluesky_message_list = []
     for meeting in to_post_df.iterrows():
         # Get variables
         category = meeting[1]["category"]
@@ -154,46 +155,51 @@ else:
         link = meeting[1]["link"]
         # Put everything together
         if category == "cabinet":
-            message = "Cabinet members of Commissioner " + str(commissioner)
+            mastodon_message = "Cabinet members of Commissioner " + str(commissioner)
+            bluesky_message = "Cabinet members of Commissioner " + str(commissioner)
         else:
-            message = "Commissioner " + str(commissioner)
-        message += " met on " + str(date) + " with:\n\n" + str(met_with) + " " + str(link) + "\n\nSubject(s):\n\n" + str(subject)
+            mastodon_message = "Commissioner " + str(commissioner)
+            bluesky_message = "Commissioner " + str(commissioner)
+        mastodon_message += " met on " + str(date) + " with:\n\n" + str(met_with) + " " + str(link) + "\n\nSubject(s):\n\n" + str(subject)
+        bluesky_message += " met on " + str(date) + " with:\n\n" + str(met_with) + "\n\nSubject(s):\n\n" + str(subject)
         # Hashtag
         commissioner_code = commissioner[:3]
         tag = commissioner_code + "meetings"
-        message += "\n\n#" + tag
+        mastodon_message += "\n\n#" + tag
+        bluesky_message += "\n\n#" + tag
         # XXXX Add tag for met_with
         # Add to list
-        message_list.append(message)
+        mastodon_message_list.append(mastodon_message)
+        bluesky_message_list.append(bluesky_message)
 
     # Set up connection to Mastodon API
-    #with open(path.join(dir, "mastodon_token.txt"), "r") as file:
-    #    token = file.read()
-    #url = "https://eupolicy.social/api/v1/statuses"
-    #auth = {"Authorization": "Bearer " + str(token)}
+    with open(path.join(dir, "mastodon_token.txt"), "r") as file:
+        token = file.read()
+    url = "https://eupolicy.social/api/v1/statuses"
+    auth = {"Authorization": "Bearer " + str(token)}
 
     # Post messages to Mastodon
-    #print("\n\nMastodon\n\n")
-    #for message in message_list:
-    #    print(message)
-    #    params = {"status": message}
-    #    r = requests.post(url, data = params, headers = auth)
-    #    print(r)
-    #    sleep(15)
+    print("\n\nMastodon\n\n")
+    for message in mastodon_message_list:
+        print(message)
+        params = {"status": mastodon_message}
+        r = requests.post(url, data = params, headers = auth)
+        print(r)
+        sleep(15)
 
     # Set up connection to Bluesky API
-    #with open(path.join(dir, "bsky_token.txt"), "r") as file:
-    #    token = file.read()
-    #client = Client(base_url = "https://bsky.social")
-    #client.login("eulobbybot.bsky.social", token)
+    with open(path.join(dir, "bsky_token.txt"), "r") as file:
+        token = file.read()
+    client = Client(base_url = "https://bsky.social")
+    client.login("eulobbybot.bsky.social", token)
 
     # Post messages to Bluesky
-    #print("\n\nBluesky\n\n")
-    #for message in message_list:
-    #    post = client.send_post(message)
-    #    print(post)
-    #    sleep(15)
+    print("\n\nBluesky\n\n")
+    for message in bluesky_message_list:
+        post = client.send_post(bluesky_message)
+        print(post)
+        sleep(15)
 
     # Add meetings to posted file
-    #posted_df = pd.concat([posted_df, to_post_df])
-    #posted_df.to_csv(path.join(dir, "meetings_posted.csv"), sep = ";", encoding = "utf-8", index = False)
+    posted_df = pd.concat([posted_df, to_post_df])
+    posted_df.to_csv(path.join(dir, "meetings_posted.csv"), sep = ";", encoding = "utf-8", index = False)
