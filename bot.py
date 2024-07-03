@@ -183,8 +183,8 @@ else:
 
     # Post messages to Mastodon
     print("\n\nMastodon\n\n")
-    for message in mastodon_message_list:
-        print(message)
+    for mastodon_message in mastodon_message_list:
+        print(mastodon_message)
         params = {"status": mastodon_message}
         r = requests.post(url, data = params, headers = auth)
         print(r)
@@ -198,7 +198,7 @@ else:
 
     # Post messages to Bluesky
     print("\n\nBluesky\n\n")
-    for message in bluesky_message_list:
+    for bluesky_message in bluesky_message_list:
         post = client.send_post(bluesky_message)
         print(post)
         sleep(15)
