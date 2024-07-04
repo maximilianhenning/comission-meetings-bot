@@ -161,7 +161,7 @@ else:
             mastodon_message = "Commissioner " + str(commissioner)
             bluesky_message = "Commissioner " + str(commissioner)
         mastodon_message += " met on " + str(date) + " with:\n\n" + str(met_with) + " " + str(link) + "\n\nSubject(s):\n\n" + str(subject)
-        if len(bluesky_message) + len(met_with) + len(subject) < 280:
+        if len(bluesky_message) + len(met_with) + len(subject) < 270:
             bluesky_message += " met on " + str(date) + " with:\n\n" + str(met_with) + "\n\nSubject(s):\n\n" + str(subject)
         else:
             bluesky_message += " met on " + str(date) + " with:\n\n" + str(met_with) + "\n\nSubject(s):\n\nToo long for message"
@@ -188,7 +188,7 @@ else:
         params = {"status": mastodon_message}
         r = requests.post(url, data = params, headers = auth)
         print(r)
-        sleep(15)
+        sleep(60)
 
     # Set up connection to Bluesky API
     with open(path.join(dir, "bsky_token.txt"), "r") as file:
@@ -201,7 +201,7 @@ else:
     for bluesky_message in bluesky_message_list:
         post = client.send_post(bluesky_message)
         print(post)
-        sleep(15)
+        sleep(60)
 
     # Add meetings to posted file
     posted_df = pd.concat([posted_df, to_post_df])
