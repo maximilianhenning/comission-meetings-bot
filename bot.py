@@ -161,7 +161,7 @@ else:
             mastodon_message = "Commissioner " + str(commissioner)
             bluesky_message = "Commissioner " + str(commissioner)
         mastodon_message += " met on " + str(date) + " with:\n\n" + str(met_with) + " " + str(link) + "\n\nSubject(s):\n\n" + str(subject)
-        if len(bluesky_message) + len(met_with) + len(subject) < 245:
+        if len(bluesky_message) + len(met_with) + len(subject) < 211:
             bluesky_message += " met on " + str(date) + " with:\n\n" + str(met_with) + "\n\nSubject(s):\n\n" + str(subject)
         else:
             bluesky_message += " met on " + str(date) + " with:\n\n" + str(met_with) + "\n\nSubject(s):\n\nToo long for message"
