@@ -125,7 +125,7 @@ else:
 
     # Get register links for organisations
     def find_link(met_with):
-        register_link_root = "https://ec.europa.eu/transparencyregister/public/consultation/displaylobbyist.do?id="
+        register_link_root = "https://transparency-register.europa.eu/searchregister-or-update/organisation-detail_en?id="
         name = re.sub(r"\s?\[.*?\]", "", met_with)
         name_match = register_df.loc[register_df["Name"] == name]
         if len(name_match.index) == 1:
@@ -134,7 +134,7 @@ else:
             acronym = re.sub(r"[^\(\)]*(\([^\(\)]*?\))[^\(\)]*", "", met_with)
             acronym_match = register_df.loc[register_df["Acronym"] == acronym]
             if len(acronym_match.index) == 1:
-                id = acronym_match["Identification code"].values
+                id = acronym_match["Identification Number"].values
         if "id" in locals():
             link = register_link_root + str(id[0])
             return link
