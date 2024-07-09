@@ -188,10 +188,12 @@ else:
     # Post messages to Mastodon
     print("\n\nMastodon\n\n")
     for mastodon_message in mastodon_message_list:
-        print(mastodon_message)
-        params = {"status": mastodon_message}
-        r = requests.post(url, data = params, headers = auth)
-        print(r)
+        try:
+            params = {"status": mastodon_message}
+            r = requests.post(url, data = params, headers = auth)
+            print(r)
+        except:
+            print(mastodon_message)
         sleep(60)
 
     # Set up connection to Bluesky API
@@ -203,7 +205,9 @@ else:
     # Post messages to Bluesky
     print("\n\nBluesky\n\n")
     for bluesky_message in bluesky_message_list:
-        print(bluesky_message)
-        post = client.send_post(bluesky_message)
-        print(post)
+        try:
+            post = client.send_post(bluesky_message)
+            print(post)
+        except:
+            print(bluesky_message)
         sleep(60)
