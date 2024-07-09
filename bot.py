@@ -101,6 +101,10 @@ else:
     to_post_df.rename(columns = {0: "commissioner", 1: "category", 2: "persons", 3: "date", 4: "year", 5: "month", 6: "day", 7: "met_with", 8: "subject"}, inplace = True)
     to_post_df.sort_values(by = ["year", "month", "day"], ascending = False, inplace = True)
 
+    # Add meetings to posted file
+    posted_df = pd.concat([posted_df, to_post_df])
+    posted_df.to_csv(path.join(dir, "meetings_posted.csv"), sep = ";", encoding = "utf-8", index = False)
+
     # Check if register file needs to be updated and do it if yes
     def read_register_file():
         return glob(path.join(dir, "register/*"))[-1]
@@ -199,10 +203,7 @@ else:
     # Post messages to Bluesky
     print("\n\nBluesky\n\n")
     for bluesky_message in bluesky_message_list:
+        print(bluesky_message)
         post = client.send_post(bluesky_message)
         print(post)
         sleep(60)
-
-    # Add meetings to posted file
-    posted_df = pd.concat([posted_df, to_post_df])
-    posted_df.to_csv(path.join(dir, "meetings_posted.csv"), sep = ";", encoding = "utf-8", index = False)
