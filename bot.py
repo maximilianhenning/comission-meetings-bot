@@ -110,16 +110,16 @@ else:
         return glob(path.join(dir, "register/*"))[-1]
 
     month = datetime.today().strftime("%Y-%m")
-    register_file = read_register_file()
-    last_update = register_file.split("\\")[-1].split(".")[0]
-    if month > last_update:
-        # Commission sometimes updates faulty spreadsheets - in those cases ignore exception & try again next time
-        try:
-            resp = requests.get("https://ec.europa.eu/transparencyregister/public/consultation/statistics.do?action=getLobbyistsExcel&fileType=XLS_NEW")   
-            new_register_df = pd.read_excel(resp.content)
-            new_register_df.to_csv(path.join(dir, "register", month + ".csv"), sep =  ";", encoding = "utf-8", index = False)
-        except Exception:
-            pass
+    #register_file = read_register_file()
+    #last_update = register_file.split("\\")[-1].split(".")[0]
+    #if month > last_update:
+    #    # Commission sometimes updates faulty spreadsheets - in those cases ignore exception & try again next time
+    #    try:
+    #        resp = requests.get("https://ec.europa.eu/transparencyregister/public/consultation/statistics.do?action=getLobbyistsExcel&fileType=XLS_NEW")   
+    #        new_register_df = pd.read_excel(resp.content)
+    #        new_register_df.to_csv(path.join(dir, "register", month + ".csv"), sep =  ";", encoding = "utf-8", index = False)
+    #    except Exception:
+    #        pass
     register_file = read_register_file()
     register_df = pd.read_csv(register_file, sep = ";", encoding = "utf-8")
 
